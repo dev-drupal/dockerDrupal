@@ -1,0 +1,62 @@
+version: "3"
+
+services:
+  site:
+    build:
+      context: .
+      dockerfile: nginx.dockerfile
+    container_name: nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./docroot:/var/www/html:delegated
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - drupal
+  
+  mysql:
+    image: mysql:5.7.29
+    container_name: mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: drupallocal
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: secret
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - drupal
+
+  composer:
+    build:
+      context: .
+      dockerfile: composer.dockerfile
+    container_name: composer
+    volumes:
+      - ./docroot:/var/www/html
+    working_dir: /var/www/html
+    depends_on:
+      - php
+    user: drupal
+    entrypoint: ["composer"]
+    networks:
+      - drupal
+
+  php:
+    build:
+      context: .
+      dockerfile: php.dockerfile
+    container_name: php
+    volumes:
+      - ./docroot:/var/www/html:delegated
+    networks:
+      - drupal
+
+networks:
+  drupal:
