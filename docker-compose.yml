@@ -57,6 +57,23 @@ services:
       - ./docroot:/var/www/html:delegated
     networks:
       - drupal
+  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    depends_on:
+      - mysql
+      - php
+    ports:
+      - 8080:80
+    environment:
+        PMA_HOST: mysql
+        PMA_USER: admin
+        PMA_PASSWORD: admin
+        PMA_ARBITRARY: 1
+        UPLOAD_LIMIT: 300M
+    networks:
+      - drupal
 
 networks:
   drupal:
